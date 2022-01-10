@@ -16,7 +16,7 @@ spec:
         tier: frontend
     spec:
       containers:
-      - name: python-redis
+      - name: bloomreach-challenge-app
         image: 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:latest
         # update image value with the image URI of the container registry  
         resources:
