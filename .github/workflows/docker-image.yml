@@ -35,18 +35,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Setting kubeconfig
-      uses: azure/k8s-set-context@v1
-      with:
-        method: kubeconfig
-        kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}
-      id: setcontext
-
-    - name: Print kubectl & kustomize versions
-      run: |-
-        kubectl version
-        kustomize version
-
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
@@ -71,7 +59,7 @@ jobs:
         # Push image to AWS ECR
         docker push 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:master-$SHORT_SHA
 
-    - name: deploy to cluster
+    - name: Deploy to cluster
       uses: kodermax/kubectl-aws-eks@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
@@ -81,7 +69,7 @@ jobs:
       with:
         args: set image deployment/$ECR_REPOSITORY $ECR_REPOSITORY=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         
-    - name: verify deployment
+    - name: Verify deployment
       uses: kodermax/kubectl-aws-eks@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
