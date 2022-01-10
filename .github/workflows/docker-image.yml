@@ -76,7 +76,7 @@ jobs:
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
         SHORT_SHA: ${GITHUB_SHA}
-        RELEASE_IMAGE: 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:$SHORT_SHA
+        RELEASE_IMAGE: 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:${{ env.SHORT_SHA }}
       with:                                                                                                         
         args: set image deployment/bloomreach-challenge-app app=${{ env.RELEASE_IMAGE }} --record
 
