@@ -13,6 +13,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CONTAINER_IMAGE: bloomreach-challenge-app
+  ECR_REPOSITORY: 422434854706.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE
 
 jobs:
   build-and-push:
@@ -34,6 +35,18 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
+      - name: Setting kubeconfig
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}
+        id: setcontext
+ 
+      - name: Print kubectl & kustomize versions
+        run: |-
+          kubectl version
+          kustomize version
+
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
@@ -45,7 +58,7 @@ jobs:
         # Build and tag the image
         docker build \
           -t $CONTAINER_IMAGE \
-          -t 422434854706.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE:master-$SHORT_SHA ./app
+          -t $ECR_REPOSITORY:master-$SHORT_SHA ./app
     
     # Add additional steps here like scanning of image
 
@@ -56,4 +69,18 @@ jobs:
         SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`
 
         # Push image to AWS ECR
-        docker push 422434854706.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE:master-$SHORT_SHA
+        docker push $ECR_REPOSITORY:master-$SHORT_SHA
+
+
+    - name: Deploy to Kubernetes cluster                                                                            
+      uses: kodermax/kubectl-aws-eks@master                                                                         
+      env:                                                                                                          
+        SHORT_SHA: ${echo ${GITHUB_SHA} | cut -c1-8}
+        RELEASE_IMAGE: $ECR_REPOSITORY:$SHORT_SHA
+      with:                                                                                                         
+        args: set image deployment/bloomreach-challenge-app app=${{ env.RELEASE_IMAGE }} --record
+
+    - name: Verify Kubernetes deployment                               
+      uses: kodermax/kubectl-aws-eks@master                            
+      with:                                                            
+        args: rollout status deploy bloomreach-challenge-app
