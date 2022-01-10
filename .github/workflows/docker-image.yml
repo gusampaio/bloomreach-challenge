@@ -53,7 +53,7 @@ jobs:
 
     - name: Build and tag the image
       run: |
-        SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`
+        SHORT_SHA=${GITHUB_SHA}
 
         # Build and tag the image
         docker build \
@@ -66,7 +66,7 @@ jobs:
     - name: Push
       if: github.ref == 'refs/heads/master'
       run: |
-        SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`
+        SHORT_SHA=${GITHUB_SHA}
 
         # Push image to AWS ECR
         docker push 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:master-$SHORT_SHA
@@ -75,7 +75,7 @@ jobs:
     - name: Deploy to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
-        SHORT_SHA: ${echo ${GITHUB_SHA} | cut -c1-8}
+        SHORT_SHA: ${GITHUB_SHA}
         RELEASE_IMAGE: 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:$SHORT_SHA
       with:                                                                                                         
         args: set image deployment/bloomreach-challenge-app app=${{ env.RELEASE_IMAGE }} --record
