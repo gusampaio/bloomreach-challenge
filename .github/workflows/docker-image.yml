@@ -58,6 +58,17 @@ jobs:
 
         # Push image to AWS ECR
         docker push 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:master-$SHORT_SHA
+    
+    - name: Deploy to cluster
+      uses: kodermax/kubectl-aws-eks@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: bloomreach-challenge-app
+        IMAGE_TAG: ${{ github.sha }}
+      with:
+        args: apply -f deploy/
+
 
     - name: Deploy to cluster
       uses: kodermax/kubectl-aws-eks@master
@@ -67,7 +78,7 @@ jobs:
         ECR_REPOSITORY: bloomreach-challenge-app
         IMAGE_TAG: ${{ github.sha }}
       with:
-        args: set image deployment/$ECR_REPOSITORY $ECR_REPOSITORY=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        args: set image deployment/$ECR_REPOSITORY $ECR_REPOSITORY=$ECR_REGISTRY/$ECR_REPOSITORY:master-$IMAGE_TAG
         
     - name: Verify deployment
       uses: kodermax/kubectl-aws-eks@master
