@@ -4,7 +4,7 @@ services:
     build: ./app/
     # App will be listening on port 5000
     ports:
-      - "5000:5000"
+      - "6000:5000"
     environment:
       # START Non secret environmental variables variables
       REDIS_HOST: redis

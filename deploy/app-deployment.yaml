@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bloomreach-challenge-app    
+spec:
+  selector:
+    matchLabels:
+      app: bloomreach-challenge-app
+      tier: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bloomreach-challenge-app
+        tier: frontend
+    spec:
+      containers:
+      - name: python-redis
+        image: 422434854706.dkr.ecr.us-east-1.amazonaws.com/bloomreach-challenge-app:latest
+        # update image value with the image URI of the container registry  
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:                     # Environment variables passed to the container
+          - name: REDIS_HOST
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: REDIS_HOST           
+          - name: REDIS_PORT
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: REDIS_PORT
+          - name: USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: USERNAME
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: PASSWORD
+          - name: THEBIGSECRET
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: THEBIGSECRET
+        ports:
+        - containerPort: 5000
